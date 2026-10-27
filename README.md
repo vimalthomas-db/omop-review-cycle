@@ -13,7 +13,7 @@ Built on synthetic, Synthea-style OMOP data with deliberately seeded mapping gap
 ## Layout
 ```
 sql/        00_schema_and_vocab .. 06_commit_layer   synthetic CDM, review layer, metric views, app views, commit tables
-            lakebase_06/07_*.sql                      Lakebase (Postgres) decision columns and grants
+            lakebase_00/06/07_*.sql                   Lakebase (Postgres) tables, decision columns, grants
 run_sql.sh  runs a SQL file through the Statement Execution API
 app/        Streamlit Databricks App: Overview, Worklist, Approve, Reference, How it works
             lib/ config.py, uc.py (Unity Catalog reads), lb.py (Lakebase reads/writes), style.py
@@ -25,11 +25,11 @@ docs/       6 Simple Steps, Field Guide, Review Design, Operations and Lifecycle
 Requirements: a Unity Catalog workspace, a SQL warehouse, a Lakebase (Autoscaling) project, Databricks CLI profile, Python 3.11+.
 
 1. Data layer: `./run_sql.sh sql/00_schema_and_vocab.sql` and so on through `sql/06_commit_layer.sql` (catalog and schemas are set in the files; default `vjoseph_pbi_demo.omop_cdm` and `omop_review`).
-2. Lakebase: create a project and database `omop_review` with two tables, `review` (one row per reviewer decision) and `code_status` (one row per source code). The original CREATE TABLE statements for these two tables were run by hand and are not in this repo; their columns are the ones read and written in `app/lib/lb.py`, plus the per-decision columns in `sql/lakebase_06_review_decision_columns.sql`. Then run `sql/lakebase_07_grants.sql`. Adding a `sql/lakebase_00_tables.sql` is the first fix to make before the next rebuild.
+2. Lakebase: `databricks postgres create-project omop-review`, `CREATE DATABASE omop_review`, then with psql apply `sql/lakebase_00_tables.sql` (the `review` and `code_status` tables) and `sql/lakebase_06_review_decision_columns.sql`. Create the app service principal's Postgres role (`databricks postgres create-role ... LAKEBASE_OAUTH_V1`) and apply the grants in `sql/lakebase_07_grants.sql`.
 3. App: edit `app/app.yaml` (warehouse, catalog, schema, Lakebase endpoint, host and the app service principal as PGUSER).
    - Local: `cd app && python -m venv .venv && .venv/bin/pip install -r requirements.txt && DATABRICKS_PROFILE=<profile> .venv/bin/streamlit run app.py` (Postgres 16 client on PATH for local Lakebase token generation).
    - Databricks Apps: `databricks sync app /Workspace/Users/<you>/omop-review --full` then `databricks apps deploy omop-review --source-code-path /Workspace/Users/<you>/omop-review`. Grant the app service principal USE CATALOG, USE/SELECT on both schemas, CAN_USE on the warehouse, and a Lakebase Postgres role with privileges on `review` and `code_status`.
 4. Commit approved mappings: `cd app && DATABRICKS_PROFILE=<profile> PGDATABASE=omop_review .venv/bin/python ../pipeline/commit_mappings.py --dry-run`, then without `--dry-run`.
 
 ## Status
-The app was last deployed on the Pulse field workspace; that deployment and its Lakebase project have since been removed, while the `omop_cdm` and `omop_review` schemas remain. Redeploying needs a new Lakebase project (step 2) and an updated `app.yaml`.
+Deployed on the Pulse field workspace (redeployed 2026-10-27): app `omop-review` at https://omop-review-984752964297111.11.azure.databricksapps.com, Lakebase project `omop-review` (Postgres 17) with database `omop_review`, reading `vjoseph_pbi_demo.omop_cdm` and `omop_review`.

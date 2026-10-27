@@ -21,6 +21,6 @@ env:
   - name: PGSSLMODE
     value: "require"
   - name: PGHOST
-    value: "ep-hidden-breeze-e18nr4vj.database.eastus2.azuredatabricks.net"
+    value: "ep-floral-block-e1j3sn1c.database.eastus2.azuredatabricks.net"
   - name: PGUSER
-    value: "539dd97d-f9a4-4413-a2fc-d713159cd419"
+    value: "179a3601-6b49-4b9a-abdc-9d6db2ef914d"
