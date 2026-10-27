@@ -1,0 +1,26 @@
+command:
+  - "streamlit"
+  - "run"
+  - "app.py"
+  - "--server.port"
+  - "8000"
+  - "--server.address"
+  - "0.0.0.0"
+
+env:
+  - name: WAREHOUSE_ID
+    value: "148ccb90800933a1"
+  - name: CATALOG
+    value: "vjoseph_pbi_demo"
+  - name: SCHEMA
+    value: "omop_review"
+  - name: ENDPOINT_NAME
+    value: "projects/omop-review/branches/production/endpoints/primary"
+  - name: PGDATABASE
+    value: "omop_review"
+  - name: PGSSLMODE
+    value: "require"
+  - name: PGHOST
+    value: "ep-hidden-breeze-e18nr4vj.database.eastus2.azuredatabricks.net"
+  - name: PGUSER
+    value: "539dd97d-f9a4-4413-a2fc-d713159cd419"

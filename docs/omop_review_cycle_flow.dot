@@ -1,0 +1,21 @@
+digraph OMOPReviewCycle {
+    rankdir=TB;
+    bgcolor="white";
+    label="How the mapping review works";
+    labelloc="t"; fontsize=22; fontname="Helvetica-Bold"; fontcolor="#3a3a3a";
+    nodesep=0.5; ranksep=0.5;
+    node [shape=box, style="filled,rounded", fontname="Helvetica",
+          color="#cfd8e3", fillcolor="#eef3f8", margin="0.28,0.18", penwidth=1.2];
+    edge [color="#9aa6b2", penwidth=1.6, arrowsize=0.9];
+
+    s1 [label=<<B>1.  Find the codes that didn't map</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">Automatic. We list every source code that<BR ALIGN="LEFT"/>never landed on a standard concept.</FONT>>];
+    s2 [label=<<B>2.  Show the list to a reviewer</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">They open the app and see the list, with a<BR ALIGN="LEFT"/>search box to look up the right concept.</FONT>>];
+    s3 [label=<<B>3.  The reviewer makes the call</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">For each code, one choice: map it, add a new<BR ALIGN="LEFT"/>local code, mark it unmappable, or ask for help.</FONT>>];
+    s4 [label=<<B>4.  Someone else approves it</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">A second person signs off. You can't approve<BR ALIGN="LEFT"/>your own. Once approved, the code is locked.</FONT>>];
+    s5 [label=<<B>5.  Apply it to the data</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">The approved mapping is written back so the<BR ALIGN="LEFT"/>code now points to the right concept.</FONT>>];
+    s6 [label=<<B>6.  See progress, then go again</B><BR ALIGN="LEFT"/><FONT POINT-SIZE="11" COLOR="#6b7785">We keep a record of what changed and watch<BR ALIGN="LEFT"/>coverage climb. Fixed codes leave the list.</FONT>>];
+
+    s1 -> s2 -> s3 -> s4 -> s5 -> s6;
+    s6 -> s1 [constraint=false, color="#5a9e6f", penwidth=2.0,
+              label="  the next batch of data  ", fontcolor="#4a8a5f", fontsize=11, fontname="Helvetica"];
+}

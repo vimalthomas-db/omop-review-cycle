@@ -1,0 +1,47 @@
+-- =====================================================================
+-- OMOP Review Cycle :: Lakebase (Postgres) roles + grants
+-- Database: omop_review   Tables: review, code_status
+--
+-- Each Databricks principal that connects directly needs (1) a Postgres role
+-- created via the CLI (LAKEBASE_OAUTH_V1) and (2) the SQL grants below.
+-- App SP is already done — shown for reference. Under Model A, reviewers/
+-- approvers do NOT connect to Postgres (the app SP fronts them).
+--
+-- Step 1 — create the role (shell, once per principal):
+--   databricks postgres create-role projects/omop-review/branches/production \
+--     --role-id <short-name-starting-with-letter> \
+--     --json '{"spec":{"identity_type":"SERVICE_PRINCIPAL","postgres_role":"<CLIENT_ID>","auth_method":"LAKEBASE_OAUTH_V1"}}'
+--   (identity_type USER + postgres_role <email> for a human; role-id cannot start with a digit)
+--
+-- Step 2 — grants (psql, as a superuser role). Replace <ROLE> with the
+-- postgres_role value (client_id for an SP, email for a user).
+-- =====================================================================
+
+-- ---------- PIPELINE SP (least privilege: read proposals, close codes) ----------
+-- GRANT CONNECT ON DATABASE omop_review            TO "<PIPELINE_SP_CLIENT_ID>";
+-- GRANT USAGE   ON SCHEMA public                   TO "<PIPELINE_SP_CLIENT_ID>";
+-- GRANT SELECT          ON review                  TO "<PIPELINE_SP_CLIENT_ID>";
+-- GRANT SELECT, UPDATE  ON code_status             TO "<PIPELINE_SP_CLIENT_ID>";
+-- GRANT USAGE, SELECT   ON ALL SEQUENCES IN SCHEMA public TO "<PIPELINE_SP_CLIENT_ID>";
+
+-- ---------- APP SP (already applied; for reference) ----------
+-- GRANT CONNECT ON DATABASE omop_review            TO "539dd97d-f9a4-4413-a2fc-d713159cd419";
+-- GRANT USAGE   ON SCHEMA public                   TO "539dd97d-f9a4-4413-a2fc-d713159cd419";
+-- GRANT SELECT, INSERT, UPDATE ON review, code_status TO "539dd97d-f9a4-4413-a2fc-d713159cd419";
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "539dd97d-f9a4-4413-a2fc-d713159cd419";
+-- ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE ON TABLES TO "539dd97d-f9a4-4413-a2fc-d713159cd419";
+
+-- =====================================================================
+-- MODEL B ONLY — human reviewers/approvers connect directly.
+-- =====================================================================
+-- reviewers: propose
+-- GRANT CONNECT ON DATABASE omop_review TO "<reviewer-email-or-group-role>";
+-- GRANT USAGE   ON SCHEMA public        TO "<reviewer-email-or-group-role>";
+-- GRANT SELECT, INSERT ON review        TO "<reviewer-email-or-group-role>";
+-- GRANT SELECT ON code_status           TO "<reviewer-email-or-group-role>";
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO "<reviewer-email-or-group-role>";
+-- approvers: decide
+-- GRANT CONNECT ON DATABASE omop_review TO "<approver-email-or-group-role>";
+-- GRANT USAGE   ON SCHEMA public        TO "<approver-email-or-group-role>";
+-- GRANT SELECT          ON review       TO "<approver-email-or-group-role>";
+-- GRANT SELECT, UPDATE  ON code_status  TO "<approver-email-or-group-role>";
